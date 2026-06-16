@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Estado de Infraestructura</title>
 <style>
+
+  /* ── Nuevo ajuste de scroll agregado ── */
+  #scrollArea{flex:1;overflow-y:auto;overflow-x:hidden;}
+
   :root{--purple:#522580;--purple-d:#3d1b60;--green:#51D393;--lpurple:#EEEDFE;--page:#E5E5E5;--yellow:#D3B41C;--s3:#2BB673;--s2:#F2C200;--s1:#E0383B;--card:#fff;--ink:#2b2b35;--muted:#7c7c8a;}
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,sans-serif;background:var(--page);color:var(--ink);}
@@ -27,7 +31,8 @@
   .lock-footer{font-size:11px;color:#ccc;margin-top:22px;}
 
   /* ── MAIN APP ── */
-  .app{max-width:1340px;margin:0 auto;background:var(--page);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.12);}
+  .app{max-width:1340px;margin:0 auto;background:var(--page);height:100vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,.12);}
+
   header{background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:14px 26px;flex-wrap:wrap;gap:12px;}
   .brand{display:flex;align-items:center;gap:14px;}
   .logo{width:42px;height:42px;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;letter-spacing:1px;}
@@ -169,6 +174,8 @@
     </div>
   </header>
 
+  <div id="scrollArea">
+
   <div class="subnav">
     <button id="backBtn" class="back-btn hidden" onclick="goHome()">← Volver al inicio</button>
     <span class="crumb" id="crumb"><b>Home</b> · Panel general de sistemas</span>
@@ -196,8 +203,9 @@
     <div class="panel"><table><thead><tr><th style="width:80px">Estado</th><th>Equipo</th><th style="width:110px">Ubicación</th><th>Diagnóstico</th><th>Observación</th></tr></thead><tbody id="detailBody"></tbody></table></div>
     <p class="note">Filas críticas resaltadas. Ordenado por severidad: lo urgente arriba.</p>
   </div>
-
+</div>
   <footer>ODATA CHILE · Dashboard de infraestructura · Datos en tiempo real desde Google Sheets</footer>
+
 </div>
 
 <script>
@@ -389,7 +397,8 @@ function openSystem(sys, loc) {
     const s=STATUS[d.e]; const rc=d.e===1?'crit':'';
     return `<tr class="${rc}"><td><span class="tag ${s.c}">${d.e}</span></td><td><b>${d.eq}</b></td><td><span class="locpill">${d.loc}</span></td><td><span class="statuscell txt ${s.c}"><span class="dot" style="background:var(--${s.c})"></span>${s.t}</span></td><td class="obs ${d.ob?'':'none'}">${d.ob||'Sin alarmas'}</td></tr>`;
   }).join('');
-  window.scrollTo({top:0, behavior:'smooth'});
+  document.getElementById('scrollArea').scrollTo({top:0,behavior:'smooth'});
+({top:0, behavior:'smooth'});
 }
 
 function goHome() {
@@ -397,7 +406,8 @@ function goHome() {
   document.getElementById('homeView').classList.remove('hidden');
   document.getElementById('backBtn').classList.add('hidden');
   document.getElementById('crumb').innerHTML = '<b>Home</b> · Panel general de sistemas';
-  window.scrollTo({top:0, behavior:'smooth'});
+  document.getElementById('scrollArea').scrollTo({top:0,behavior:'smooth'});
+({top:0, behavior:'smooth'});
 }
 
 // ── Init ──────────────────────────────────────────────
