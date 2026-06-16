@@ -237,7 +237,7 @@ const ICONS = {
   'Chiller':'<path d="M12 3v18M5 7l14 10M5 17L19 7"/>',
   'Cooling':'<path d="M3 8h13a3 3 0 100-6M3 14h17a3 3 0 110 6"/>',
   'UPS':'<rect x="4" y="8" width="14" height="8" rx="1"/><path d="M18 11v2M7 8V6h6v2"/>',
-  'Blockset':'<rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/>',
+  'Boards & Power':'<rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/>',
   'Genset':'<path d="M5 8h11l3 3v5H5zM8 16v2M16 16v2"/><circle cx="9" cy="11" r="1"/>',
   'MV switchgear':'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
   'Fire Extinguisher':'<path d="M9 8a3 3 0 016 0v10a2 2 0 01-2 2h-2a2 2 0 01-2-2zM12 5V3M12 3h3"/>',
@@ -414,7 +414,7 @@ function openSystem(sys, loc) {
     const s=STATUS[d.e]; const rc=d.e===1?'crit':'';
     return `<tr class="${rc}"><td><span class="tag ${s.c}">${d.e}</span></td><td><b>${d.eq}</b></td><td><span class="locpill">${d.loc}</span></td><td><span class="statuscell txt ${s.c}"><span class="dot" style="background:var(--${s.c})"></span>${s.t}</span></td><td class="obs ${d.ob?'':'none'}">${d.ob||'Sin alarmas'}</td></tr>`;
   }).join('');
-
+  
   document.querySelectorAll('#detailBody tr').forEach((el,i)=>{ el.style.cssText+=`animation:fadeUp .3s ${i*.04}s ease both;`; });
   window.scrollTo({top:0,behavior:'smooth'});
 
