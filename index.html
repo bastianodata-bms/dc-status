@@ -124,6 +124,21 @@
   #fetchOverlay p{color:#fff;font-size:14px;font-weight:600;letter-spacing:.3px;}
   .status-bar{font-size:12px;margin-bottom:12px;min-height:18px;}
   .status-bar.ok{color:var(--s3);} .status-bar.err{color:var(--s1);} .status-bar.info{color:var(--muted);}
+
+  /* ── Animations ── */
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(224,56,59,.35);}70%{box-shadow:0 0 0 7px rgba(224,56,59,0);}}
+.sys{animation:fadeUp .4s ease both;}
+.sys.s1 .badge{animation:pulse 2.2s ease infinite;}
+.hcard{animation:fadeUp .35s ease both;}
+.hcard:nth-child(2){animation-delay:.08s;}
+.hcard:nth-child(3){animation-delay:.16s;}
+#homeView{animation:fadeIn .3s ease both;}
+#detailView{animation:fadeIn .3s ease both;}
+.loc{transition:.22s cubic-bezier(.34,1.56,.64,1);}
+
 </style>
 </head>
 <body>
@@ -334,6 +349,7 @@ async function fetchData() {
     }
     if (!out.length) throw new Error('No se encontraron filas válidas (ESTADO debe ser 1, 2 ó 3)');
     DATA = out;
+
     renderHome();
     const now = new Date().toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
     document.getElementById('syncTime').textContent = now + ' · ';
@@ -379,6 +395,7 @@ function renderHome() {
     }).join('');
     return `<div class="sys ${STATUS[st].c}"><div class="top" data-sys="${sys}">${icon(sys)}<span class="name">${sys}</span><span class="badge">${st}</span></div><div class="locs">${locCells}</div><div class="foot"><span>${DATA.filter(d=>d.sys===sys).length} equipos</span><span class="ftbtn" data-sys="${sys}">ver todos →</span></div></div>`;
   }).join('');
+  document.querySelectorAll('.sys').forEach((el,i)=>{ el.style.animationDelay=(i*.06)+'s'; });
   document.querySelectorAll('.top[data-sys]').forEach(el=>el.onclick=()=>openSystem(el.getAttribute('data-sys'),null));
   document.querySelectorAll('.ftbtn[data-sys]').forEach(el=>el.onclick=()=>openSystem(el.getAttribute('data-sys'),null));
   document.querySelectorAll('.loc[data-s]').forEach(el=>el.onclick=()=>{ if(el.getAttribute('data-na')==='true')return; openSystem(el.getAttribute('data-s'),el.getAttribute('data-l')); });
@@ -397,6 +414,8 @@ function openSystem(sys, loc) {
     const s=STATUS[d.e]; const rc=d.e===1?'crit':'';
     return `<tr class="${rc}"><td><span class="tag ${s.c}">${d.e}</span></td><td><b>${d.eq}</b></td><td><span class="locpill">${d.loc}</span></td><td><span class="statuscell txt ${s.c}"><span class="dot" style="background:var(--${s.c})"></span>${s.t}</span></td><td class="obs ${d.ob?'':'none'}">${d.ob||'Sin alarmas'}</td></tr>`;
   }).join('');
+
+  document.querySelectorAll('#detailBody tr').forEach((el,i)=>{ el.style.cssText+=`animation:fadeUp .3s ${i*.04}s ease both;`; });
   window.scrollTo({top:0,behavior:'smooth'});
 
 ({top:0, behavior:'smooth'});
