@@ -14,7 +14,9 @@
   body{font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,sans-serif;background:var(--page);color:var(--ink);}
 
   /* ── LOCK SCREEN ── */
-  #lockScreen{position:fixed;inset:0;background:linear-gradient(135deg,#3d1b60 0%,#522580 60%,#7b3ab5 100%);display:flex;align-items:center;justify-content:center;z-index:9999;}
+  #lockScreen{position:fixed;inset:0;background:linear-gradient(135deg,#3d1b60,#522580,#7b3ab5,#522580,#3d1b60);background-size:300% 300%;animation:lockGradient 18s ease infinite;display:flex;align-items:center;justify-content:center;z-index:9999;overflow:hidden;}
+  #lockCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+  .lock-card{position:relative;z-index:2;}
   .lock-card{background:#fff;border-radius:20px;padding:40px 44px;width:360px;max-width:92vw;box-shadow:0 24px 64px rgba(0,0,0,.35);text-align:center;}
   .lock-logo{width:64px;height:64px;border-radius:50%;background:var(--purple);color:#fff;font-size:15px;font-weight:800;letter-spacing:1px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;}
   .lock-title{font-size:18px;font-weight:700;color:var(--purple);margin-bottom:4px;}
@@ -138,6 +140,8 @@
 #homeView{animation:fadeIn .3s ease both;}
 #detailView{animation:fadeIn .3s ease both;}
 .loc{transition:.22s cubic-bezier(.34,1.56,.64,1);}
+@keyframes lockGradient{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+
 
 </style>
 </head>
@@ -147,6 +151,9 @@
      PANTALLA DE ACCESO
 ══════════════════════════════════════ -->
 <div id="lockScreen">
+   <canvas id="lockCanvas"></canvas>
+
+
   <div class="lock-card">
     <div class="lock-logo">DC</div>
     <div class="lock-title">Estado de Infraestructura</div>
@@ -307,6 +314,57 @@ function parseCSV(text) {
   if (field || row.length) { row.push(field.trim()); if (row.some(f=>f!=='')) rows.push(row); }
   return rows;
 }
+
+// ── Partículas del login (red de nodos) ──────────────
+(function(){
+  const canvas = document.getElementById('lockCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let w, h, pts, raf;
+  const COUNT = 55;          // cantidad de partículas
+  const LINK = 130;          // distancia para unir con líneas
+  function resize(){ w=canvas.width=canvas.offsetWidth; h=canvas.height=canvas.offsetHeight; }
+  function init(){
+    resize();
+    pts = Array.from({length:COUNT},()=>({
+      x:Math.random()*w, y:Math.random()*h,
+      vx:(Math.random()-.5)*.4, vy:(Math.random()-.5)*.4
+    }));
+  }
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    for(const p of pts){
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0||p.x>w) p.vx*=-1;
+      if(p.y<0||p.y>h) p.vy*=-1;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,1.8,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,.55)';
+      ctx.fill();
+    }
+    for(let i=0;i<pts.length;i++){
+      for(let j=i+1;j<pts.length;j++){
+        const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y;
+        const d=Math.hypot(dx,dy);
+        if(d<LINK){
+          ctx.beginPath();
+          ctx.moveTo(pts[i].x,pts[i].y);
+          ctx.lineTo(pts[j].x,pts[j].y);
+          ctx.strokeStyle='rgba(255,255,255,'+(.12*(1-d/LINK))+')';
+          ctx.stroke();
+        }
+      }
+    }
+    raf=requestAnimationFrame(draw);
+  }
+  function start(){ if(!raf){ init(); draw(); } }
+  function stop(){ cancelAnimationFrame(raf); raf=null; }
+  window.addEventListener('resize',()=>{ if(raf) resize(); });
+  // arranca al cargar; si querés frenarla al entrar al dashboard, llamá stop()
+  start();
+  window._lockParticles={start,stop};
+})();
+
 
 function normH(s) { return String(s||'').trim().toUpperCase().replace(/\s+/g,'_'); }
 function findCol(hs, opts) { return hs.findIndex(h => opts.includes(h)); }
