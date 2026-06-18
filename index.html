@@ -409,7 +409,9 @@ async function fetchData() {
     DATA = out;
 
     renderHome();
-    const now = new Date().toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
+    const nowDate = new Date();
+    const now = nowDate.toLocaleDateString('es-CL', {day:'2-digit', month:'2-digit', year:'numeric'})
+      + ' ' + nowDate.toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
     document.getElementById('syncTime').textContent = now + ' · ';
     setStatus(`${out.length} equipos cargados${bad?' ('+bad+' filas ignoradas)':''}.`, 'ok');
     if (AUTO_REFRESH_MIN > 0) refreshTimer = setTimeout(fetchData, AUTO_REFRESH_MIN * 60 * 1000);
