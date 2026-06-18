@@ -11,7 +11,10 @@
 
   :root{--purple:#522580;--purple-d:#3d1b60;--green:#51D393;--lpurple:#EEEDFE;--page:#E5E5E5;--yellow:#D3B41C;--s3:#2BB673;--s2:#F2C200;--s1:#E0383B;--card:#fff;--ink:#2b2b35;--muted:#7c7c8a;}
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,sans-serif;background:var(--page);color:var(--ink);}
+  body{font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,sans-serif;background:#1a1228;color:var(--ink);}
+
+  /* ── FONDO TÉCNICO ANIMADO ── */
+  #bgCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 50% 0%,#241634 0%,#181024 60%,#120c1c 100%);}
 
   /* ── LOCK SCREEN ── */
   #lockScreen{position:fixed;inset:0;background:linear-gradient(135deg,#3d1b60,#522580,#7b3ab5,#522580,#3d1b60);background-size:300% 300%;animation:lockGradient 18s ease infinite;display:flex;align-items:center;justify-content:center;z-index:9999;overflow:hidden;}
@@ -33,7 +36,7 @@
   .lock-footer{font-size:11px;color:#ccc;margin-top:22px;}
 
   /* ── MAIN APP ── */
-  .app{max-width:1340px;margin:0 auto;background:var(--page);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.12);}
+  .app{position:relative;z-index:1;max-width:1340px;margin:0 auto;background:var(--page);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.12);}
 
   header{background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:14px 26px;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100;}
   .brand{display:flex;align-items:center;gap:14px;}
@@ -146,6 +149,9 @@
 </style>
 </head>
 <body>
+
+<!-- Fondo técnico animado (grid + pulsos de datos) -->
+<canvas id="bgCanvas"></canvas>
 
 <!-- ══════════════════════════════════════
      PANTALLA DE ACCESO
@@ -497,6 +503,81 @@ if (sessionStorage.getItem('dc_ok') === '1') {
   document.getElementById('mainApp').classList.remove('hidden');
   fetchData();
 }
+
+// ── Fondo técnico: grid + pulsos de datos ──────────────
+(function(){
+  const canvas = document.getElementById('bgCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let w, h, raf, pulses = [];
+  const GRID = 46;            // separación del grid en px
+  const LINE = 'rgba(160,120,220,.06)';   // líneas del grid
+  const PULSE_COLOR = '139,92,200';        // color de los pulsos (rgb)
+  const MAX_PULSES = 7;       // pulsos simultáneos
+
+  function resize(){
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+
+  function spawn(){
+    const horizontal = Math.random() < .5;
+    if(horizontal){
+      const row = Math.round((Math.random()*h)/GRID)*GRID;
+      const dir = Math.random()<.5 ? 1 : -1;
+      pulses.push({x: dir>0?-20:w+20, y:row, vx:dir*(1.1+Math.random()*1.4), vy:0, life:1});
+    } else {
+      const col = Math.round((Math.random()*w)/GRID)*GRID;
+      const dir = Math.random()<.5 ? 1 : -1;
+      pulses.push({x:col, y: dir>0?-20:h+20, vx:0, vy:dir*(1.1+Math.random()*1.4), life:1});
+    }
+  }
+
+  function drawGrid(){
+    ctx.strokeStyle = LINE;
+    ctx.lineWidth = 1;
+    for(let x=0; x<=w; x+=GRID){
+      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke();
+    }
+    for(let y=0; y<=h; y+=GRID){
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
+    }
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    drawGrid();
+
+    if(pulses.length < MAX_PULSES && Math.random() < .04) spawn();
+
+    for(let i=pulses.length-1; i>=0; i--){
+      const p = pulses[i];
+      p.x += p.vx; p.y += p.vy;
+      // estela
+      const len = 60;
+      const tx = p.x - (p.vx? Math.sign(p.vx)*len : 0);
+      const ty = p.y - (p.vy? Math.sign(p.vy)*len : 0);
+      const grad = ctx.createLinearGradient(tx,ty,p.x,p.y);
+      grad.addColorStop(0,'rgba('+PULSE_COLOR+',0)');
+      grad.addColorStop(1,'rgba('+PULSE_COLOR+',.5)');
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(tx,ty); ctx.lineTo(p.x,p.y); ctx.stroke();
+      // cabeza
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,2,0,Math.PI*2);
+      ctx.fillStyle = 'rgba('+PULSE_COLOR+',.85)';
+      ctx.fill();
+      // descartar fuera de pantalla
+      if(p.x<-80||p.x>w+80||p.y<-80||p.y>h+80) pulses.splice(i,1);
+    }
+    raf = requestAnimationFrame(draw);
+  }
+
+  resize();
+  draw();
+  window.addEventListener('resize', resize);
+})();
 </script>
 </body>
 </html>
