@@ -11,15 +11,10 @@
 
   :root{--purple:#522580;--purple-d:#3d1b60;--green:#51D393;--lpurple:#EEEDFE;--page:#E5E5E5;--yellow:#D3B41C;--s3:#2BB673;--s2:#F2C200;--s1:#E0383B;--card:#fff;--ink:#2b2b35;--muted:#7c7c8a;}
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,sans-serif;background:#1a1228;color:var(--ink);}
-
-  /* ── FONDO TÉCNICO ANIMADO ── */
-  #bgCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 50% 0%,#241634 0%,#181024 60%,#120c1c 100%);}
+  body{font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,sans-serif;background:var(--page);color:var(--ink);}
 
   /* ── LOCK SCREEN ── */
-  #lockScreen{position:fixed;inset:0;background:linear-gradient(135deg,#3d1b60,#522580,#7b3ab5,#522580,#3d1b60);background-size:300% 300%;animation:lockGradient 18s ease infinite;display:flex;align-items:center;justify-content:center;z-index:9999;overflow:hidden;}
-  #lockCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
-  .lock-card{position:relative;z-index:2;}
+  #lockScreen{position:fixed;inset:0;background:linear-gradient(135deg,#3d1b60 0%,#522580 60%,#7b3ab5 100%);display:flex;align-items:center;justify-content:center;z-index:9999;}
   .lock-card{background:#fff;border-radius:20px;padding:40px 44px;width:360px;max-width:92vw;box-shadow:0 24px 64px rgba(0,0,0,.35);text-align:center;}
   .lock-logo{width:64px;height:64px;border-radius:50%;background:var(--purple);color:#fff;font-size:15px;font-weight:800;letter-spacing:1px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;}
   .lock-title{font-size:18px;font-weight:700;color:var(--purple);margin-bottom:4px;}
@@ -36,7 +31,7 @@
   .lock-footer{font-size:11px;color:#ccc;margin-top:22px;}
 
   /* ── MAIN APP ── */
-  .app{position:relative;z-index:1;max-width:1340px;margin:0 auto;background:var(--page);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.12);}
+  .app{max-width:1340px;margin:0 auto;background:var(--page);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.12);}
 
   header{background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:14px 26px;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100;}
   .brand{display:flex;align-items:center;gap:14px;}
@@ -97,7 +92,6 @@
   .locs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
   .loc{border-radius:8px;padding:7px 4px;text-align:center;font-size:11px;font-weight:700;color:#fff;cursor:pointer;border:2px solid transparent;transition:.12s;}
   .loc:hover{transform:scale(1.06);border-color:#26215C;}
-  .loc small{display:block;font-size:9px;font-weight:600;opacity:.9;margin-top:1px;}
   .loc.s3{background:var(--s3);} .loc.s2{background:var(--s2);color:#5a4700;} .loc.s1{background:var(--s1);} .loc.na{background:#eceaf2;color:#b5b1c4;cursor:not-allowed;}
   .loc.site{outline:2px dashed rgba(82,37,128,.55);outline-offset:-3px;}
   .loc.na:hover{transform:none;border-color:transparent;}
@@ -143,23 +137,15 @@
 #homeView{animation:fadeIn .3s ease both;}
 #detailView{animation:fadeIn .3s ease both;}
 .loc{transition:.22s cubic-bezier(.34,1.56,.64,1);}
-@keyframes lockGradient{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
-
 
 </style>
 </head>
 <body>
 
-<!-- Fondo técnico animado (grid + pulsos de datos) -->
-<canvas id="bgCanvas"></canvas>
-
 <!-- ══════════════════════════════════════
      PANTALLA DE ACCESO
 ══════════════════════════════════════ -->
 <div id="lockScreen">
-   <canvas id="lockCanvas"></canvas>
-
-
   <div class="lock-card">
     <div class="lock-logo">DC</div>
     <div class="lock-title">Estado de Infraestructura</div>
@@ -321,57 +307,6 @@ function parseCSV(text) {
   return rows;
 }
 
-// ── Partículas del login (red de nodos) ──────────────
-(function(){
-  const canvas = document.getElementById('lockCanvas');
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-  let w, h, pts, raf;
-  const COUNT = 55;          // cantidad de partículas
-  const LINK = 130;          // distancia para unir con líneas
-  function resize(){ w=canvas.width=canvas.offsetWidth; h=canvas.height=canvas.offsetHeight; }
-  function init(){
-    resize();
-    pts = Array.from({length:COUNT},()=>({
-      x:Math.random()*w, y:Math.random()*h,
-      vx:(Math.random()-.5)*.4, vy:(Math.random()-.5)*.4
-    }));
-  }
-  function draw(){
-    ctx.clearRect(0,0,w,h);
-    for(const p of pts){
-      p.x+=p.vx; p.y+=p.vy;
-      if(p.x<0||p.x>w) p.vx*=-1;
-      if(p.y<0||p.y>h) p.vy*=-1;
-      ctx.beginPath();
-      ctx.arc(p.x,p.y,1.8,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,255,255,.55)';
-      ctx.fill();
-    }
-    for(let i=0;i<pts.length;i++){
-      for(let j=i+1;j<pts.length;j++){
-        const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y;
-        const d=Math.hypot(dx,dy);
-        if(d<LINK){
-          ctx.beginPath();
-          ctx.moveTo(pts[i].x,pts[i].y);
-          ctx.lineTo(pts[j].x,pts[j].y);
-          ctx.strokeStyle='rgba(255,255,255,'+(.12*(1-d/LINK))+')';
-          ctx.stroke();
-        }
-      }
-    }
-    raf=requestAnimationFrame(draw);
-  }
-  function start(){ if(!raf){ init(); draw(); } }
-  function stop(){ cancelAnimationFrame(raf); raf=null; }
-  window.addEventListener('resize',()=>{ if(raf) resize(); });
-  // arranca al cargar; si querés frenarla al entrar al dashboard, llamá stop()
-  start();
-  window._lockParticles={start,stop};
-})();
-
-
 function normH(s) { return String(s||'').trim().toUpperCase().replace(/\s+/g,'_'); }
 function findCol(hs, opts) { return hs.findIndex(h => opts.includes(h)); }
 
@@ -415,9 +350,7 @@ async function fetchData() {
     DATA = out;
 
     renderHome();
-    const nowDate = new Date();
-    const now = nowDate.toLocaleDateString('es-CL', {day:'2-digit', month:'2-digit', year:'numeric'})
-      + ' ' + nowDate.toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
+    const now = new Date().toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
     document.getElementById('syncTime').textContent = now + ' · ';
     setStatus(`${out.length} equipos cargados${bad?' ('+bad+' filas ignoradas)':''}.`, 'ok');
     if (AUTO_REFRESH_MIN > 0) refreshTimer = setTimeout(fetchData, AUTO_REFRESH_MIN * 60 * 1000);
@@ -457,7 +390,7 @@ function renderHome() {
     const locCells = LOCS.map(loc => {
       const ls = locState(sys, loc);
       const cls = (ls===null?'na':STATUS[ls].c) + (loc==='SITE'?' site':'');
-      return `<div class="loc ${cls}" data-s="${sys}" data-l="${loc}" data-na="${ls===null}">${loc}<small>${ls!==null?ls:'—'}</small></div>`;
+      return `<div class="loc ${cls}" data-s="${sys}" data-l="${loc}" data-na="${ls===null}">${loc}</div>`;
     }).join('');
     return `<div class="sys ${STATUS[st].c}"><div class="top" data-sys="${sys}">${icon(sys)}<span class="name">${sys}</span><span class="badge">${st}</span></div><div class="locs">${locCells}</div><div class="foot"><span>${DATA.filter(d=>d.sys===sys).length} equipos</span><span class="ftbtn" data-sys="${sys}">ver todos →</span></div></div>`;
   }).join('');
@@ -503,81 +436,6 @@ if (sessionStorage.getItem('dc_ok') === '1') {
   document.getElementById('mainApp').classList.remove('hidden');
   fetchData();
 }
-
-// ── Fondo técnico: grid + pulsos de datos ──────────────
-(function(){
-  const canvas = document.getElementById('bgCanvas');
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-  let w, h, raf, pulses = [];
-  const GRID = 46;            // separación del grid en px
-  const LINE = 'rgba(160,120,220,.06)';   // líneas del grid
-  const PULSE_COLOR = '139,92,200';        // color de los pulsos (rgb)
-  const MAX_PULSES = 7;       // pulsos simultáneos
-
-  function resize(){
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
-  }
-
-  function spawn(){
-    const horizontal = Math.random() < .5;
-    if(horizontal){
-      const row = Math.round((Math.random()*h)/GRID)*GRID;
-      const dir = Math.random()<.5 ? 1 : -1;
-      pulses.push({x: dir>0?-20:w+20, y:row, vx:dir*(1.1+Math.random()*1.4), vy:0, life:1});
-    } else {
-      const col = Math.round((Math.random()*w)/GRID)*GRID;
-      const dir = Math.random()<.5 ? 1 : -1;
-      pulses.push({x:col, y: dir>0?-20:h+20, vx:0, vy:dir*(1.1+Math.random()*1.4), life:1});
-    }
-  }
-
-  function drawGrid(){
-    ctx.strokeStyle = LINE;
-    ctx.lineWidth = 1;
-    for(let x=0; x<=w; x+=GRID){
-      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke();
-    }
-    for(let y=0; y<=h; y+=GRID){
-      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
-    }
-  }
-
-  function draw(){
-    ctx.clearRect(0,0,w,h);
-    drawGrid();
-
-    if(pulses.length < MAX_PULSES && Math.random() < .04) spawn();
-
-    for(let i=pulses.length-1; i>=0; i--){
-      const p = pulses[i];
-      p.x += p.vx; p.y += p.vy;
-      // estela
-      const len = 60;
-      const tx = p.x - (p.vx? Math.sign(p.vx)*len : 0);
-      const ty = p.y - (p.vy? Math.sign(p.vy)*len : 0);
-      const grad = ctx.createLinearGradient(tx,ty,p.x,p.y);
-      grad.addColorStop(0,'rgba('+PULSE_COLOR+',0)');
-      grad.addColorStop(1,'rgba('+PULSE_COLOR+',.5)');
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(tx,ty); ctx.lineTo(p.x,p.y); ctx.stroke();
-      // cabeza
-      ctx.beginPath();
-      ctx.arc(p.x,p.y,2,0,Math.PI*2);
-      ctx.fillStyle = 'rgba('+PULSE_COLOR+',.85)';
-      ctx.fill();
-      // descartar fuera de pantalla
-      if(p.x<-80||p.x>w+80||p.y<-80||p.y>h+80) pulses.splice(i,1);
-    }
-    raf = requestAnimationFrame(draw);
-  }
-
-  resize();
-  draw();
-  window.addEventListener('resize', resize);
-})();
 </script>
 </body>
 </html>
