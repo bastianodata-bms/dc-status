@@ -38,6 +38,9 @@
   .hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
   .sync-info{font-size:11px;opacity:.7;text-align:right;line-height:1.5;}
   .sync-info b{opacity:1;display:block;font-size:12px;}
+  .recent-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;color:#a8f0c8;margin-top:2px;letter-spacing:.2px;}
+  .recent-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--s3);box-shadow:0 0 0 0 rgba(43,182,115,.6);animation:rbPulse 1.8s ease infinite;}
+  @keyframes rbPulse{0%{box-shadow:0 0 0 0 rgba(43,182,115,.6);}70%{box-shadow:0 0 0 5px rgba(43,182,115,0);}}
   .refresh-btn{background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.4);border-radius:9px;color:#fff;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap;}
   .refresh-btn:hover{background:rgba(255,255,255,.22);}
   .refresh-btn.spinning{opacity:.6;pointer-events:none;}
@@ -186,7 +189,7 @@
       <div><h1>ESTADO DE INFRAESTRUCTURA</h1><small>MONITOREO OPERATIVO · SISTEMA SEMÁFORO</small></div>
     </div>
     <div class="hdr-right">
-      <div class="sync-info"><b id="syncTime">—</b>última actualización</div>
+      <div class="sync-info"><b id="syncTime">—</b>última actualización<div id="recentBadge" class="recent-badge hidden"></div></div>
       <button class="refresh-btn" id="refreshBtn" onclick="fetchData()">↻ Actualizar</button>
     </div>
   </header>
@@ -234,7 +237,7 @@
 const SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjUJGpZmustnVA14efPDozktWxKTdAN8ra_Hlh8cnLSG8uYeHH0AhBZCI0rUUACY6fmtrPq6NJGstx/pub?gid=69668739&single=true&output=csv'; // URL de Google Sheets publicado como CSV
 const PASS_HASH = 'b926bfb5098405461e6f8f0fe09bc01ea9c83bbf5e811a9ecec6e83b849bb48a'; // hash SHA-256 de la clave de acceso (no escribir la clave en texto plano aquí)
 const AUTO_REFRESH_MIN = 5; // refrescar cada N minutos (0 = desactivado)
-const VERSION = 'v1.1 · 23-06-2026'; // ⚠ Subir manualmente este número y fecha cada vez que se modifique el archivo
+const VERSION = 'v1.2 · 23-06-2026'; // ⚠ Subir manualmente este número y fecha cada vez que se modifique el archivo
 // ══════════════════════════════════════════════════════
 
 const STATUS = {3:{t:'Óptimo',c:'s3'}, 2:{t:'Observación',c:'s2'}, 1:{t:'Crítico',c:'s1'}};
@@ -252,6 +255,29 @@ const SYSTEMS = ['Chiller','Cooling','UPS','Boards & Power','Genset','MV switchg
 const LOCS = ['SH1','SH2','SH3','SH4','SH5','SH6','MNR-A','MNR-B','SITE'];
 let DATA = [];
 let refreshTimer = null;
+let lastChangeTs = null; // timestamp (ms) de la última vez que el contenido del Sheet cambió realmente, detectado por comparación de datos
+
+// ── Detección de cambios recientes ────────────────────
+function simpleHash(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
+  return h.toString(36);
+}
+function timeAgo(ts) {
+  const diffMin = Math.round((Date.now() - ts) / 60000);
+  if (diffMin < 1) return 'hace instantes';
+  if (diffMin < 60) return `hace ${diffMin} min`;
+  return `hace ${Math.round(diffMin / 60)} h`;
+}
+function updateSyncDisplay() {
+  const badge = document.getElementById('recentBadge');
+  if (lastChangeTs && (Date.now() - lastChangeTs) < 60 * 60 * 1000) {
+    badge.textContent = `Cambio reciente · ${timeAgo(lastChangeTs)}`;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
 
 // ── Hashing ──────────────────────────────────────────
 async function hashStr(s) {
@@ -355,9 +381,26 @@ async function fetchData() {
     if (!out.length) throw new Error('No se encontraron filas válidas (ESTADO debe ser 1, 2 ó 3)');
     DATA = out;
 
+    // Detectar si el contenido cambió respecto al último fetch (persistido en este navegador)
+    const fingerprint = simpleHash(JSON.stringify(out));
+    const prevHash = localStorage.getItem('dc_dataHash');
+    if (prevHash === null) {
+      lastChangeTs = null; // primera carga en este navegador: sin base de comparación
+    } else if (prevHash !== fingerprint) {
+      lastChangeTs = Date.now();
+      localStorage.setItem('dc_lastChangeTs', String(lastChangeTs));
+    } else {
+      const prevTs = localStorage.getItem('dc_lastChangeTs');
+      lastChangeTs = prevTs ? parseInt(prevTs, 10) : null;
+    }
+    localStorage.setItem('dc_dataHash', fingerprint);
+
     renderHome();
-    const now = new Date().toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
-    document.getElementById('syncTime').textContent = now + ' · ';
+    const now = new Date();
+    const dStr = now.toLocaleDateString('es-CL', {day:'2-digit', month:'2-digit', year:'numeric'});
+    const tStr = now.toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
+    document.getElementById('syncTime').textContent = `${dStr} ${tStr} · `;
+    updateSyncDisplay();
     setStatus(`${out.length} equipos cargados${bad?' ('+bad+' filas ignoradas)':''}.`, 'ok');
     if (AUTO_REFRESH_MIN > 0) refreshTimer = setTimeout(fetchData, AUTO_REFRESH_MIN * 60 * 1000);
   } catch (err) {
@@ -459,6 +502,7 @@ function goHome() {
 
 // ── Init ──────────────────────────────────────────────
 document.getElementById('versionBadge').textContent = VERSION;
+setInterval(updateSyncDisplay, 60 * 1000);
 if (sessionStorage.getItem('dc_ok') === '1') {
   document.getElementById('lockScreen').style.display = 'none';
   document.getElementById('mainApp').classList.remove('hidden');
