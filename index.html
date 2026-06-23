@@ -92,7 +92,6 @@
   .locs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
   .loc{border-radius:8px;padding:7px 4px;text-align:center;font-size:11px;font-weight:700;color:#fff;cursor:pointer;border:2px solid transparent;transition:.12s;}
   .loc:hover{transform:scale(1.06);border-color:#26215C;}
-  .loc small{display:block;font-size:9px;font-weight:600;opacity:.9;margin-top:1px;}
   .loc.s3{background:var(--s3);} .loc.s2{background:var(--s2);color:#5a4700;} .loc.s1{background:var(--s1);} .loc.na{background:#eceaf2;color:#b5b1c4;cursor:not-allowed;}
   .loc.site{outline:2px dashed rgba(82,37,128,.55);outline-offset:-3px;}
   .loc.na:hover{transform:none;border-color:transparent;}
@@ -391,7 +390,7 @@ function renderHome() {
     const locCells = LOCS.map(loc => {
       const ls = locState(sys, loc);
       const cls = (ls===null?'na':STATUS[ls].c) + (loc==='SITE'?' site':'');
-      return `<div class="loc ${cls}" data-s="${sys}" data-l="${loc}" data-na="${ls===null}">${loc}<small>${ls!==null?ls:'—'}</small></div>`;
+      return `<div class="loc ${cls}" data-s="${sys}" data-l="${loc}" data-na="${ls===null}">${loc}</div>`;
     }).join('');
     return `<div class="sys ${STATUS[st].c}"><div class="top" data-sys="${sys}">${icon(sys)}<span class="name">${sys}</span><span class="badge">${st}</span></div><div class="locs">${locCells}</div><div class="foot"><span>${DATA.filter(d=>d.sys===sys).length} equipos</span><span class="ftbtn" data-sys="${sys}">ver todos →</span></div></div>`;
   }).join('');
