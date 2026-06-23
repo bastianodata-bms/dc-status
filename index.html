@@ -225,6 +225,8 @@
 
 </div>
 
+<div id="versionBadge" class="version-badge"></div>
+
 <script>
 // ══════════════════════════════════════════════════════
 // CONFIGURACIÓN — editar estos dos valores
@@ -232,7 +234,7 @@
 const SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjUJGpZmustnVA14efPDozktWxKTdAN8ra_Hlh8cnLSG8uYeHH0AhBZCI0rUUACY6fmtrPq6NJGstx/pub?gid=69668739&single=true&output=csv'; // URL de Google Sheets publicado como CSV
 const PASS_HASH = 'b926bfb5098405461e6f8f0fe09bc01ea9c83bbf5e811a9ecec6e83b849bb48a'; // hash SHA-256 de la clave de acceso (no escribir la clave en texto plano aquí)
 const AUTO_REFRESH_MIN = 5; // refrescar cada N minutos (0 = desactivado)
-const VERSION = 'v1.0 · 23-06-2026'; // ⚠ Subir manualmente este número y fecha cada vez que se modifique el archivo
+const VERSION = 'v1.1 · 23-06-2026'; // ⚠ Subir manualmente este número y fecha cada vez que se modifique el archivo
 // ══════════════════════════════════════════════════════
 
 const STATUS = {3:{t:'Óptimo',c:'s3'}, 2:{t:'Observación',c:'s2'}, 1:{t:'Crítico',c:'s1'}};
@@ -463,7 +465,6 @@ if (sessionStorage.getItem('dc_ok') === '1') {
   fetchData();
 }
 </script>
-<div id="versionBadge" class="version-badge"></div>
 
 </body>
 </html>
