@@ -69,8 +69,8 @@
   .sys.s3{border-top-color:var(--s3);} .sys.s3 .badge{background:var(--s3);}
   .sys.s2{border-top-color:var(--s2);} .sys.s2 .badge{background:var(--s2);}
   .sys.s1{border-top-color:var(--s1);} .sys.s1 .badge{background:var(--s1);}
-  .locs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
-  .loc{border-radius:8px;padding:7px 4px;text-align:center;font-size:11px;font-weight:700;color:#fff;cursor:pointer;border:2px solid transparent;transition:.12s;}
+  .locs{display:flex;flex-wrap:wrap;gap:6px;}
+  .loc{border-radius:8px;padding:7px 4px;text-align:center;font-size:11px;font-weight:700;color:#fff;cursor:pointer;border:2px solid transparent;transition:.12s;flex:1 1 auto;min-width:52px;}
   .loc:hover{transform:scale(1.06);border-color:#26215C;}
   .loc.s3{background:var(--s3);} .loc.s2{background:var(--s2);color:#5a4700;} .loc.s1{background:var(--s1);} .loc.na{background:#eceaf2;color:#b5b1c4;cursor:not-allowed;}
   .loc.site{outline:2px dashed rgba(82,37,128,.55);outline-offset:-3px;}
@@ -211,7 +211,6 @@
       <div class="item"><span class="sw" style="background:var(--s3)"></span>3 · Óptimo</div>
       <div class="item"><span class="sw" style="background:var(--s2)"></span>2 · Observación</div>
       <div class="item"><span class="sw" style="background:var(--s1)"></span>1 · Crítico</div>
-      <div class="item"><span class="sw" style="background:#eceaf2"></span>Sin equipos en esa ubicación</div>
     </div>
     <p class="note">El número en la esquina de cada tarjeta refleja el <b>peor caso</b> del sistema. Cada celda de ubicación muestra el peor estado de los equipos de ese sistema en esa ubicación. Clic en una celda = detalle de esa ubicación; clic en el título o "ver todos" = todos los equipos del sistema.</p>
   </div>
@@ -237,7 +236,7 @@
 const SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjUJGpZmustnVA14efPDozktWxKTdAN8ra_Hlh8cnLSG8uYeHH0AhBZCI0rUUACY6fmtrPq6NJGstx/pub?gid=69668739&single=true&output=csv'; // URL de Google Sheets publicado como CSV
 const PASS_HASH = 'b926bfb5098405461e6f8f0fe09bc01ea9c83bbf5e811a9ecec6e83b849bb48a'; // hash SHA-256 de la clave de acceso (no escribir la clave en texto plano aquí)
 const AUTO_REFRESH_MIN = 5; // refrescar cada N minutos (0 = desactivado)
-const VERSION = 'v1.2 · 23-06-2026'; // ⚠ Subir manualmente este número y fecha cada vez que se modifique el archivo
+const VERSION = 'v1.3 · 23-06-2026'; // ⚠ Subir manualmente este número y fecha cada vez que se modifique el archivo
 // ══════════════════════════════════════════════════════
 
 const STATUS = {3:{t:'Óptimo',c:'s3'}, 2:{t:'Observación',c:'s2'}, 1:{t:'Crítico',c:'s1'}};
@@ -444,8 +443,9 @@ function renderHome() {
     const st = sysState(sys);
     const locCells = LOCS.map(loc => {
       const ls = locState(sys, loc);
-      const cls = (ls===null?'na':STATUS[ls].c) + (loc==='SITE'?' site':'');
-      return `<div class="loc ${cls}" data-s="${sys}" data-l="${loc}" data-na="${ls===null}">${loc}</div>`;
+      if (ls === null) return '';
+      const cls = STATUS[ls].c + (loc==='SITE'?' site':'');
+      return `<div class="loc ${cls}" data-s="${sys}" data-l="${loc}" data-na="false">${loc}</div>`;
     }).join('');
     return `<div class="sys ${STATUS[st].c}"><div class="top" data-sys="${sys}">${icon(sys)}<span class="name">${sys}</span><span class="badge">${st}</span></div><div class="locs">${locCells}</div><div class="foot"><span>${DATA.filter(d=>d.sys===sys).length} equipos</span><span class="ftbtn" data-sys="${sys}">ver todos →</span></div></div>`;
   }).join('');
