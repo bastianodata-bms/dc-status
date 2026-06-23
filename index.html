@@ -6,9 +6,6 @@
 <title>Dashboard Estado de Infraestructura</title>
 <style>
 
-  /* ── Nuevo ajuste de scroll agregado ── */
-  
-
   :root{--purple:#522580;--purple-d:#3d1b60;--green:#51D393;--lpurple:#EEEDFE;--page:#E5E5E5;--yellow:#D3B41C;--s3:#2BB673;--s2:#F2C200;--s1:#E0383B;--card:#fff;--ink:#2b2b35;--muted:#7c7c8a;}
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,sans-serif;background:var(--page);color:var(--ink);}
@@ -57,32 +54,9 @@
   .hcard.s3{border-color:var(--s3);} .hcard.s3 .n{color:var(--s3);}
   .hcard.s2{border-color:var(--s2);} .hcard.s2 .n{color:#c79b00;}
   .hcard.s1{border-color:var(--s1);} .hcard.s1 .n{color:var(--s1);}
-  .hcard.s1{border-color:var(--s1);} .hcard.s1 .n{color:var(--s1);}
   .hcard.clickable{cursor:pointer;transition:.18s;}
   .hcard.clickable:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(0,0,0,.14);}
   .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
-  @media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:768px){
-  header{padding:10px 14px;flex-wrap:wrap;}
-  .brand h1{font-size:14px;}
-  .logo{width:34px;height:34px;font-size:11px;}
-  .hdr-right{width:100%;justify-content:space-between;}
-  .refresh-btn{padding:6px 12px;font-size:11px;}
-  .wrap{padding:14px 12px 30px;}
-  .subnav{padding:10px 12px 0;}
-  .grid{grid-template-columns:repeat(2,1fr);gap:12px;}
-  .health{max-width:100%;}
-  .loc{padding:9px 4px;}
-  thead th{padding:10px;font-size:11px;}
-  tbody td{padding:10px;font-size:13px;}
-  .page-title{font-size:18px;}
-}
-@media(max-width:480px){
-  .grid{grid-template-columns:1fr;}
-  .brand small{display:none;}
-  .hcard .n{font-size:24px;}
-  .locs{grid-template-columns:repeat(3,1fr);}
-}
   .sys{background:var(--card);border-radius:16px;padding:16px;box-shadow:0 6px 18px rgba(0,0,0,.07);transition:.2s;border-top:5px solid var(--muted);display:flex;flex-direction:column;gap:12px;}
   .sys:hover{box-shadow:0 14px 30px rgba(0,0,0,.12);}
   .sys .top{display:flex;align-items:center;gap:10px;cursor:pointer;padding:4px;border-radius:8px;transition:.12s;}
@@ -118,6 +92,29 @@
   footer{background:var(--purple);color:rgba(255,255,255,.6);font-size:11px;text-align:center;padding:12px;letter-spacing:.4px;}
   .note{font-size:11px;color:var(--muted);margin-top:16px;line-height:1.5;}
   svg.ico{stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+
+  @media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:768px){
+  header{padding:10px 14px;flex-wrap:wrap;}
+  .brand h1{font-size:14px;}
+  .logo{width:34px;height:34px;font-size:11px;}
+  .hdr-right{width:100%;justify-content:space-between;}
+  .refresh-btn{padding:6px 12px;font-size:11px;}
+  .wrap{padding:14px 12px 30px;}
+  .subnav{padding:10px 12px 0;}
+  .grid{grid-template-columns:repeat(2,1fr);gap:12px;}
+  .health{max-width:100%;}
+  .loc{padding:9px 4px;}
+  thead th{padding:10px;font-size:11px;}
+  tbody td{padding:10px;font-size:13px;}
+  .page-title{font-size:18px;}
+}
+@media(max-width:480px){
+  .grid{grid-template-columns:1fr;}
+  .brand small{display:none;}
+  .hcard .n{font-size:24px;}
+  .locs{grid-template-columns:repeat(3,1fr);}
+}
 
   /* ── LOADING OVERLAY ── */
   #fetchOverlay{position:fixed;inset:0;background:rgba(82,37,128,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;gap:16px;}
@@ -230,7 +227,7 @@
 // CONFIGURACIÓN — editar estos dos valores
 // ══════════════════════════════════════════════════════
 const SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjUJGpZmustnVA14efPDozktWxKTdAN8ra_Hlh8cnLSG8uYeHH0AhBZCI0rUUACY6fmtrPq6NJGstx/pub?gid=69668739&single=true&output=csv'; // URL de Google Sheets publicado como CSV
-const PASS_HASH = 'b926bfb5098405461e6f8f0fe09bc01ea9c83bbf5e811a9ecec6e83b849bb48a'; // clave: ODATA2025
+const PASS_HASH = 'b926bfb5098405461e6f8f0fe09bc01ea9c83bbf5e811a9ecec6e83b849bb48a'; // hash SHA-256 de la clave de acceso (no escribir la clave en texto plano aquí)
 const AUTO_REFRESH_MIN = 5; // refrescar cada N minutos (0 = desactivado)
 // ══════════════════════════════════════════════════════
 
@@ -425,8 +422,6 @@ function openSystem(sys, loc) {
   
   document.querySelectorAll('#detailBody tr').forEach((el,i)=>{ el.style.cssText+=`animation:fadeUp .3s ${i*.04}s ease both;`; });
   window.scrollTo({top:0,behavior:'smooth'});
-
-({top:0, behavior:'smooth'});
 }
 
 function openStatusAll(status) {
@@ -450,8 +445,6 @@ function goHome() {
   document.getElementById('backBtn').classList.add('hidden');
   document.getElementById('crumb').innerHTML = '<b>Home</b> · Panel general de sistemas';
   window.scrollTo({top:0,behavior:'smooth'});
-
-({top:0, behavior:'smooth'});
 }
 
 // ── Init ──────────────────────────────────────────────
