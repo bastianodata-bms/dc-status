@@ -400,7 +400,7 @@ async function fetchData() {
     const tStr = now.toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
     document.getElementById('syncTime').textContent = `${dStr} ${tStr} · `;
     updateSyncDisplay();
-    setStatus(`${out.length} equipos cargados${bad?' ('+bad+' filas ignoradas)':''}.`, 'ok');
+    setStatus('', '');
     if (AUTO_REFRESH_MIN > 0) refreshTimer = setTimeout(fetchData, AUTO_REFRESH_MIN * 60 * 1000);
   } catch (err) {
     setStatus('Error al cargar datos: ' + err.message, 'err');
