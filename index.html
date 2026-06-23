@@ -457,7 +457,7 @@ function renderHome() {
     const locCells = LOCS.map(loc => {
       const ls = locState(sys, loc);
       const cls = (ls===null?'na':STATUS[ls].c) + (loc==='SITE'?' site':'');
-      return `<div class="loc ${cls}" data-s="${sys}" data-l="${loc}" data-na="${ls===null}">${loc}<small>${ls!==null?ls:'—'}</small></div>`;
+      return `<div class="loc ${cls}" data-s="${sys}" data-l="${loc}" data-na="${ls===null}">${loc}</div>`;
     }).join('');
     return `<div class="sys ${STATUS[st].c}"><div class="top" data-sys="${sys}">${icon(sys)}<span class="name">${sys}</span><span class="badge">${st}</span></div><div class="locs">${locCells}</div><div class="foot"><span>${DATA.filter(d=>d.sys===sys).length} equipos</span><span class="ftbtn" data-sys="${sys}">ver todos →</span></div></div>`;
   }).join('');
