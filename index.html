@@ -57,6 +57,9 @@
   .hcard.s3{border-color:var(--s3);} .hcard.s3 .n{color:var(--s3);}
   .hcard.s2{border-color:var(--s2);} .hcard.s2 .n{color:#c79b00;}
   .hcard.s1{border-color:var(--s1);} .hcard.s1 .n{color:var(--s1);}
+  .hcard.s1{border-color:var(--s1);} .hcard.s1 .n{color:var(--s1);}
+  .hcard.clickable{cursor:pointer;transition:.18s;}
+  .hcard.clickable:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(0,0,0,.14);}
   .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
   @media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:768px){
@@ -377,7 +380,9 @@ function sysState(sys) { const l=DATA.filter(d=>d.sys===sys); return l.length?Ma
 function counts(list) { return {3:list.filter(d=>d.e===3).length, 2:list.filter(d=>d.e===2).length, 1:list.filter(d=>d.e===1).length}; }
 function strip(el, list) {
   const c = counts(list);
-  el.innerHTML = `<div class="hcard s3"><div class="n">${c[3]}</div><div class="t">Óptimo</div></div><div class="hcard s2"><div class="n">${c[2]}</div><div class="t">Observación</div></div><div class="hcard s1"><div class="n">${c[1]}</div><div class="t">Crítico</div></div>`;
+  const clickable = el.id === 'healthStrip';
+  el.innerHTML = `<div class="hcard s3${clickable?' clickable':''}" ${clickable?'id="optimoCard"':''}><div class="n">${c[3]}</div><div class="t">Óptimo</div></div><div class="hcard s2"><div class="n">${c[2]}</div><div class="t">Observación</div></div><div class="hcard s1"><div class="n">${c[1]}</div><div class="t">Crítico</div></div>`;
+  if (clickable) document.getElementById('optimoCard').onclick = () => openStatusAll(3);
 }
 
 function renderHome() {
@@ -400,6 +405,13 @@ function renderHome() {
   document.querySelectorAll('.loc[data-s]').forEach(el=>el.onclick=()=>{ if(el.getAttribute('data-na')==='true')return; openSystem(el.getAttribute('data-s'),el.getAttribute('data-l')); });
 }
 
+function renderEquipmentTable(list) {
+  return list.map(d=>{
+    const s=STATUS[d.e]; const rc=d.e===1?'crit':'';
+    return `<tr class="${rc}"><td><span class="tag ${s.c}">${d.e}</span></td><td><b>${d.eq}</b></td><td><span class="locpill">${d.loc}</span></td><td><span class="statuscell txt ${s.c}"><span class="dot" style="background:var(--${s.c})"></span>${s.t}</span></td><td class="obs ${d.ob?'':'none'}">${d.ob||'Sin alarmas'}</td></tr>`;
+  }).join('');
+}
+
 function openSystem(sys, loc) {
   document.getElementById('homeView').classList.add('hidden');
   document.getElementById('detailView').classList.remove('hidden');
@@ -409,15 +421,27 @@ function openSystem(sys, loc) {
   document.getElementById('detailTitle').textContent = loc ? `${sys} — ${loc}` : `${sys} — todas las ubicaciones`;
   document.getElementById('detailSub').textContent = `${list.length} equipo(s)${loc?' en '+loc:' en '+new Set(list.map(d=>d.loc)).size+' ubicación(es)'} · ordenados por severidad`;
   strip(document.getElementById('detailHealth'), list);
-  document.getElementById('detailBody').innerHTML = list.map(d=>{
-    const s=STATUS[d.e]; const rc=d.e===1?'crit':'';
-    return `<tr class="${rc}"><td><span class="tag ${s.c}">${d.e}</span></td><td><b>${d.eq}</b></td><td><span class="locpill">${d.loc}</span></td><td><span class="statuscell txt ${s.c}"><span class="dot" style="background:var(--${s.c})"></span>${s.t}</span></td><td class="obs ${d.ob?'':'none'}">${d.ob||'Sin alarmas'}</td></tr>`;
-  }).join('');
+  document.getElementById('detailBody').innerHTML = renderEquipmentTable(list);
   
   document.querySelectorAll('#detailBody tr').forEach((el,i)=>{ el.style.cssText+=`animation:fadeUp .3s ${i*.04}s ease both;`; });
   window.scrollTo({top:0,behavior:'smooth'});
 
 ({top:0, behavior:'smooth'});
+}
+
+function openStatusAll(status) {
+  document.getElementById('homeView').classList.add('hidden');
+  document.getElementById('detailView').classList.remove('hidden');
+  document.getElementById('backBtn').classList.remove('hidden');
+  const list = DATA.filter(d => d.e === status).sort((a,b)=> a.sys.localeCompare(b.sys) || a.loc.localeCompare(b.loc));
+  const st = STATUS[status];
+  document.getElementById('crumb').innerHTML = `<b>Home</b> · Todos en estado ${st.t}`;
+  document.getElementById('detailTitle').textContent = `Equipos en estado ${st.t} — todos los sistemas y ubicaciones`;
+  document.getElementById('detailSub').textContent = `${list.length} equipo(s) en estado ${st.t}`;
+  strip(document.getElementById('detailHealth'), list);
+  document.getElementById('detailBody').innerHTML = renderEquipmentTable(list);
+  document.querySelectorAll('#detailBody tr').forEach((el,i)=>{ el.style.cssText+=`animation:fadeUp .3s ${i*.04}s ease both;`; });
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function goHome() {
